@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mis Finanzas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --bg:#F2F3F9;
+    --surface:#FFFFFF;
+    --surface-soft:#F8F9FD;
+    --border:#E9EAF3;
+    --text:#171826;
+    --text-secondary:#8B8DA1;
+    --text-tertiary:#B7B9CC;
+    --primary:#6C5CE7;
+    --primary-dark:#5A4BD1;
+    --primary-light:#EEEBFD;
+    --teal:#1FBF9E;
+    --teal-light:#E1F9F3;
+    --coral:#FF6767;
+    --coral-light:#FFEBEB;
+    --blue:#4F8EF7;
+    --blue-light:#EAF2FE;
+    --amber:#FFB020;
+    --amber-light:#FFF5E2;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --font-display:'Outfit',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --shadow-card:0 1px 2px rgba(23,24,38,.04), 0 12px 24px -14px rgba(23,24,38,.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    font-size:15px;
+    line-height:1.45;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  a{text-decoration:none;color:inherit;}
+  h1,h2,h3{margin:0;}
+  p{margin:0;}
+  svg{display:block;}
+
+  /* ---------- Layout ---------- */
+  #app{display:flex;min-height:100vh;align-items:stretch;}
+  .sidebar{
+    width:252px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+    padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:32px;padding:0 8px;}
+  .brand-icon{
+    width:38px;height:38px;border-radius:12px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--primary),var(--teal));
+    display:flex;align-items:center;justify-content:center;color:#fff;
+  }
+  .brand-icon svg{width:19px;height:19px;}
+  .brand-name{font-family:var(--font-display);font-weight:700;font-size:17.5px;letter-spacing:-.02em;}
+
+  .nav{display:flex;flex-direction:column;gap:3px;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;
+    color:var(--text-secondary);font-weight:500;font-size:14px;cursor:pointer;
+    transition:background .15s,color .15s;user-select:none;
+  }
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .nav-item:hover{background:var(--surface-soft);color:var(--text);}
+  .nav-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:600;}
+
+  .main{flex:1;min-width:0;padding:26px 32px 110px;max-width:1360px;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+  .page-title{font-family:var(--font-display);font-size:25px;font-weight:700;letter-spacing:-.02em;}
+  .page-sub{color:var(--text-secondary);font-size:13.3px;margin-top:3px;}
+
+  .sync-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:20px;background:var(--surface-soft);border:1px solid var(--border);color:var(--text-secondary);font-size:12.2px;font-weight:600;flex-shrink:0;white-space:nowrap;}
+  .sync-badge svg{width:14px;height:14px;}
+  .sync-badge.connected{background:var(--teal-light);color:#0F9E82;border-color:transparent;}
+  .sync-badge.syncing svg{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    font-family:var(--font-body);font-weight:600;font-size:13.3px;border-radius:12px;
+    padding:10px 17px;border:1px solid transparent;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .15s,background .15s;
+    white-space:nowrap;
+  }
+  .btn svg{width:15px;height:15px;flex-shrink:0;}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),#8171F0);color:#fff;box-shadow:0 8px 18px -7px rgba(108,92,231,.6);}
+  .btn-primary:hover{filter:brightness(1.06);transform:translateY(-1px);}
+  .btn-ghost{background:var(--surface-soft);color:var(--text);border-color:var(--border);}
+  .btn-ghost:hover{background:var(--border);}
+  .btn-danger{background:var(--coral-light);color:#D93B3B;}
+  .btn-danger:hover{filter:brightness(.97);}
+  .btn-sm{padding:8px 12px;font-size:12.5px;border-radius:10px;}
+  .btn-block{width:100%;justify-content:center;}
+  .icon-btn{
+    width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    color:var(--text-secondary);background:transparent;border:1px solid transparent;flex-shrink:0;
+  }
+  .icon-btn svg{width:15.5px;height:15.5px;}
+  .icon-btn:hover{background:var(--surface-soft);color:var(--text);border-color:var(--border);}
+
+  /* ---------- Cards / generic ---------- */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-card);}
+  .section-actions{display:flex;justify-content:flex-end;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .section-title{font-family:var(--font-display);font-weight:600;font-size:14.5px;color:var(--text-secondary);margin-bottom:12px;}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11.8px;font-weight:600;}
+  .row-actions{display:flex;gap:4px;}
+
+  /* ---------- Stat cards ---------- */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;}
+  .stat-card{padding:20px;}
+  .stat-icon{width:37px;height:37px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .stat-icon svg{width:18px;height:18px;}
+  .stat-label{color:var(--text-secondary);font-size:12.6px;font-weight:500;margin-bottom:5px;}
+  .stat-value{font-family:var(--font-display);font-size:21px;font-weight:700;letter-spacing:-.01em;}
+  .trend-pill{display:inline-flex;align-items:center;gap:3px;font-size:11.2px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:9px;}
+  .trend-pill svg{width:10.5px;height:10.5px;}
+  .trend-up{background:var(--teal-light);color:#0F9E82;}
+  .trend-down{background:var(--coral-light);color:#E1444B;}
+  .stat-sub{display:inline-block;font-size:11.5px;color:var(--text-tertiary);margin-top:9px;font-weight:500;}
+
+  /* ---------- Charts ---------- */
+  .charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:18px;align-items:stretch;}
+  .chart-card{display:flex;flex-direction:column;}
+  .chart-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
+  .chart-head h3{font-family:var(--font-display);font-weight:600;font-size:15px;}
+  .chart-sub{font-size:11.8px;color:var(--text-secondary);}
+  .chart-wrap{height:250px;position:relative;}
+  .donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;flex:1;}
+  .donut-canvas-wrap{width:168px;height:168px;position:relative;flex-shrink:0;margin:0 auto;}
+  .donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+  .donut-total{display:block;font-family:var(--font-display);font-weight:700;font-size:16px;}
+  .donut-total-label{font-size:10.5px;color:var(--text-secondary);}
+  .legend-list{flex:1;min-width:150px;}
+  .legend-row{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:12.8px;}
+  .legend-row+.legend-row{border-top:1px solid var(--border);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .legend-name{flex:1;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .legend-amount{font-weight:700;color:var(--text);font-family:var(--font-display);font-size:12px;flex-shrink:0;}
+
+  /* ---------- Transaction rows ---------- */
+  .tx-icon{
+    width:37px;height:37px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13.5px;flex-shrink:0;
+  }
+  .tx-row{display:flex;align-items:center;gap:12px;padding:11px 2px;}
+  .tx-row+.tx-row{border-top:1px solid var(--border);}
+  .tx-full-row{display:flex;align-items:center;gap:12px;padding:12px 2px;flex-wrap:wrap;}
+  .tx-full-row+.tx-full-row{border-top:1px solid var(--border);}
+  .tx-info{flex:1;min-width:120px;}
+  .tx-desc{font-weight:600;font-size:13.6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tx-meta{font-size:11.8px;color:var(--text-secondary);margin-top:2px;}
+  .tx-cat-pill{flex-shrink:0;}
+  .tx-amount{font-weight:700;font-size:13.8px;font-family:var(--font-display);white-space:nowrap;flex-shrink:0;margin-left:auto;}
+  .tx-full-row .tx-amount{margin-left:0;}
+  .tx-amount.positive{color:#0F9E82;}
+  .tx-amount.negative{color:#E1444B;}
+
+  /* ---------- Account / pocket / category cards ---------- */
+  .accounts-grid,.pockets-grid,.categories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:14px;}
+  .cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+  .account-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+  .account-name{font-weight:600;font-size:14px;color:var(--text-secondary);margin-bottom:4px;}
+  .account-balance{font-family:var(--font-display);font-weight:700;font-size:21px;margin-bottom:10px;letter-spacing:-.01em;}
+  .cat-dot-lg{width:37px;height:37px;border-radius:11px;display:inline-block;}
+  .pocket-actions{display:flex;gap:8px;margin-top:14px;}
+  .pocket-actions .btn{flex:1;justify-content:center;}
+
+  /* ---------- Credit card ---------- */
+  .cc-block{display:flex;flex-direction:column;}
+  .credit-card{
+    position:relative;overflow:hidden;border-radius:20px;padding:22px 24px;color:#fff;
+    background:linear-gradient(135deg,#6C5CE7 0%,#5A4BD1 55%,#1FBF9E 130%);
+    aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between;
+    box-shadow:0 18px 34px -12px rgba(90,75,209,.55);
+  }
+  .credit-card::before{
+    content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;
+    background:rgba(255,255,255,.10);
+  }
+  .credit-card::after{
+    content:'';position:absolute;bottom:-60px;left:-30px;width:180px;height:180px;border-radius:50%;
+    background:rgba(255,255,255,.06);
+  }
+  .cc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}
+  .cc-chip{width:36px;height:26px;border-radius:6px;background:linear-gradient(135deg,#FFE9B0,#E8C874);position:relative;}
+  .cc-chip::before{content:'';position:absolute;top:5px;left:4px;right:4px;bottom:5px;border:1px solid rgba(0,0,0,.18);border-radius:3px;}
+  .credit-card .icon-btn{color:rgba(255,255,255,.85);}
+  .credit-card .icon-btn:hover{background:rgba(255,255,255,.16);color:#fff;}
+  .cc-number{font-family:var(--font-display);font-size:16.5px;letter-spacing:2.5px;font-weight:500;position:relative;z-index:1;opacity:.95;}
+  .cc-bottom{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1;gap:10px;}
+  .cc-label{font-size:11px;opacity:.8;margin-bottom:3px;}
+  .cc-debt{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-.01em;}
+  .cc-name{font-size:12.5px;font-weight:600;opacity:.9;text-align:right;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  /* ---------- Filter bar ---------- */
+  .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:14px;}
+  .filter-bar select,.filter-bar input{flex:1;min-width:140px;}
+
+  /* ---------- Forms ---------- */
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-size:12.3px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field-hint{font-size:12.3px;color:var(--text-secondary);margin-top:-8px;margin-bottom:16px;}
+  input,select,textarea{
+    width:100%;padding:10.5px 13px;border-radius:11px;border:1.5px solid var(--border);
+    background:var(--surface-soft);font-family:var(--font-body);font-size:13.8px;color:var(--text);
+    transition:border-color .15s,background .15s;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:#fff;}
+  input[type=color]{padding:4px;height:42px;cursor:pointer;}
+
+  .segmented{display:flex;background:var(--surface-soft);border-radius:12px;padding:4px;border:1px solid var(--border);margin-bottom:15px;}
+  .segmented button{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-weight:600;font-size:13.3px;color:var(--text-secondary);}
+  .segmented button.active{background:#fff;box-shadow:0 1px 2px rgba(23,24,38,.08);}
+  .segmented button.active[data-val="ingreso"]{color:#0F9E82;}
+  .segmented button.active[data-val="gasto"]{color:#E1444B;}
+  .segmented button.active[data-val="ahorro"]{color:var(--primary-dark);}
+  .segmented button.active[data-val="tarjeta"]{color:var(--primary-dark);}
+  .segmented button:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(15,16,28,.46);backdrop-filter:blur(2px);
+    display:flex;align-items:center;justify-content:center;z-index:100;
+    opacity:0;pointer-events:none;transition:opacity .15s;padding:20px;
+  }
+  .modal-overlay.active{opacity:1;pointer-events:auto;}
+  .modal{
+    background:var(--surface);border-radius:20px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;
+    padding:24px;transform:translateY(10px) scale(.98);transition:transform .18s;
+    box-shadow:0 30px 60px -14px rgba(0,0,0,.28);
+  }
+  .modal-overlay.active .modal{transform:translateY(0) scale(1);}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .modal-head h3{font-family:var(--font-display);font-size:16.5px;font-weight:700;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+  /* ---------- Empty states ---------- */
+  .empty-state{text-align:center;padding:54px 22px;}
+  .empty-icon{width:54px;height:54px;border-radius:16px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .empty-icon svg{width:25px;height:25px;}
+  .empty-state h3{font-family:var(--font-display);font-size:16.5px;margin-bottom:6px;}
+  .empty-state p{color:var(--text-secondary);font-size:13.3px;max-width:380px;margin:0 auto 20px;}
+  .empty-inline{text-align:center;padding:28px 10px;color:var(--text-tertiary);}
+  .empty-inline svg{width:28px;height:28px;margin:0 auto 8px;}
+  .empty-inline p{font-size:12.8px;color:var(--text-secondary);}
+
+  /* ---------- Toast ---------- */
+  .toast-container{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;width:100%;padding:0 16px;pointer-events:none;}
+  .toast{
+    background:#1E1F2E;color:#fff;padding:12px 18px;border-radius:12px;font-size:13.2px;font-weight:500;
+    box-shadow:0 12px 26px rgba(0,0,0,.28);display:flex;align-items:center;gap:8px;
+    transition:opacity .25s,transform .25s;max-width:340px;
+  }
+  .toast svg{width:16px;height:16px;flex-shrink:0;color:#1FBF9E;}
+  .toast.error{background:#D93B3B;}
+  .toast.error svg{color:#fff;}
+
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed;right:26px;bottom:26px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--teal));color:#fff;
+    display:flex;align-items:center;justify-content:center;border:none;
+    box-shadow:0 14px 28px -8px rgba(108,92,231,.65);z-index:45;transition:transform .15s;
+  }
+  .fab:hover{transform:scale(1.06);}
+  .fab svg{width:24px;height:24px;}
+
+  /* ---------- Bottom nav (mobile) ---------- */
+  .bottom-nav{display:none;}
+  .view[hidden]{display:none;}
+
+  @media (max-width:900px){
+    .charts-row{grid-template-columns:1fr;}
+  }
+
+  @media (max-width:768px){
+    .sidebar{display:none;}
+    .main{padding:18px 16px 96px;max-width:100%;}
+    .fab{bottom:82px;right:16px;}
+    .bottom-nav{
+      display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+      border-top:1px solid var(--border);padding:7px 4px calc(6px + env(safe-area-inset-bottom));
+      justify-content:space-around;z-index:40;
+    }
+    .bn-item{
+      display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-tertiary);
+      font-size:10px;font-weight:600;flex:1;padding:5px 2px;border-radius:10px;user-select:none;
+    }
+    .bn-item svg{width:19px;height:19px;}
+    .bn-item.active{color:var(--primary);}
+  }
+
+  @media (max-width:480px){
+    .field-row{grid-template-columns:1fr;}
+    .page-title{font-size:21px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v10a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/><path d="M17 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4Z"/></svg></span>
+      <span class="brand-name">Mis Finanzas</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-action="nav" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+        Resumen
+      </div>
+      <div class="nav-item" data-action="nav" data-view="cuentas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v10a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/><path d="M17 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4Z"/></svg>
+        Cuentas
+      </div>
+      <div class="nav-item" data-action="nav" data-view="bolsillos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.3 9.5c0-1.1 1.15-2 2.7-2s2.7.75 2.7 1.9c0 2.4-5.4 1.7-5.4 4.1 0 1.15 1.2 1.9 2.7 1.9s2.7-.9 2.7-2"/></svg>
+        Bolsillos
+      </div>
+      <div class="nav-item" data-action="nav" data-view="transacciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+        Transacciones
+      </div>
+      <div class="nav-item" data-action="nav" data-view="categorias">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10 12.5 2.5a1 1 0 0 0-.7-.3H4a1 1 0 0 0-1 1v7.8a1 1 0 0 0 .3.7L10.8 19a2 2 0 0 0 2.8 0L20 12.8a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>
+        Categorías
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title" id="pageTitle">Resumen</h1>
+        <p class="page-sub" id="pageSub">Tu panorama financiero de un vistazo</p>
+      </div>
+      <button class="sync-badge" id="syncBadge" data-action="open-sync" title="Sincronización con Google Drive"></button>
+    </div>
+
+    <div class="view" id="view-dashboard"></div>
+    <div class="view" id="view-cuentas" hidden></div>
+    <div class="view" id="view-bolsillos" hidden></div>
+    <div class="view" id="view-transacciones" hidden></div>
+    <div class="view" id="view-categorias" hidden></div>
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bn-item active" data-action="nav" data-view="dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+    Resumen
+  </div>
+  <div class="bn-item" data-action="nav" data-view="cuentas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v10a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/><path d="M17 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4Z"/></svg>
+    Cuentas
+  </div>
+  <div class="bn-item" data-action="nav" data-view="bolsillos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.3 9.5c0-1.1 1.15-2 2.7-2s2.7.75 2.7 1.9c0 2.4-5.4 1.7-5.4 4.1 0 1.15 1.2 1.9 2.7 1.9s2.7-.9 2.7-2"/></svg>
+    Bolsillos
+  </div>
+  <div class="bn-item" data-action="nav" data-view="transacciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+    Movs.
+  </div>
+  <div class="bn-item" data-action="nav" data-view="categorias">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10 12.5 2.5a1 1 0 0 0-.7-.3H4a1 1 0 0 0-1 1v7.8a1 1 0 0 0 .3.7L10.8 19a2 2 0 0 0 2.8 0L20 12.8a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>
+    Categorías
+  </div>
+</nav>
+
+<button class="fab" id="fab" title="Nueva transacción" aria-label="Nueva transacción">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   ICONOS
+========================================================= */
+const ICONS = {
+  wallet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v10a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/><path d="M17 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4Z"/></svg>`,
+  piggy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.3 9.5c0-1.1 1.15-2 2.7-2s2.7.75 2.7 1.9c0 2.4-5.4 1.7-5.4 4.1 0 1.15 1.2 1.9 2.7 1.9s2.7-.9 2.7-2"/></svg>`,
+  card: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
+  trendUp: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 10 10l4 4 7-7"/><path d="M15 6h6v6"/></svg>`,
+  trendDown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l7 7 4-4 7 7"/><path d="M15 17h6v-6"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>`,
+  inbox: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 3h4l2-3h4"/><path d="M5.5 5h13l2 7v7a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-7Z"/></svg>`,
+  arrowDownToLine: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>`,
+  arrowUpFromLine: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/></svg>`,
+  cloud: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6.5 6.5 0 0 0-12.4-1.7A4.5 4.5 0 0 0 6.5 19h11Z"/></svg>`,
+  sync: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8.1 8.1 0 0 0 6.5 6.3L3 9.5"/><path d="M3 4.5v5h5"/><path d="M4 13a8.1 8.1 0 0 0 13.5 4.7L21 14.5"/><path d="M16 19.5v-5h5"/></svg>`,
+  swap: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3 3 7l4 4"/><path d="M3 7h13a4 4 0 0 1 4 4v1"/><path d="M17 21l4-4-4-4"/><path d="M21 17H8a4 4 0 0 1-4-4v-1"/></svg>`
+};
+
+/* =========================================================
+   CONFIGURACIÓN DE GOOGLE DRIVE (opcional)
+   ---------------------------------------------------------
+   Para activar la sincronización con Google Drive:
+   1. Ve a https://console.cloud.google.com/apis/credentials
+   2. Crea un proyecto (si no tienes uno) y una credencial de
+      tipo "ID de cliente de OAuth" > "Aplicación web".
+   3. En "Orígenes de JavaScript autorizados" agrega la URL
+      exacta https:// donde alojarás este archivo (ej. tu URL
+      de GitHub Pages). OAuth de Google NO funciona abriendo
+      el archivo con doble clic (file://) — necesitas alojarlo
+      en una URL https:// real (GitHub Pages, Netlify, Vercel,
+      Cloudflare Pages... todas tienen plan gratuito).
+   4. En "Pantalla de consentimiento OAuth", modo "Testing",
+      agrégate a ti mismo como "usuario de prueba" (así no
+      necesitas pasar la revisión de Google para uso personal).
+   5. Copia el "ID de cliente" (termina en .apps.googleusercontent.com)
+      y pégalo abajo, reemplazando la cadena vacía.
+========================================================= */
+const GOOGLE_CLIENT_ID = "295710642739-07s8lhtjvtsargk20gveo6cmi3f9lk9d.apps.googleusercontent.com";
+
+/* =========================================================
+   CONSTANTES
+========================================================= */
+const STORAGE_KEY = "mis_finanzas_data_v1";
+const PALETTE = ["#6C5CE7","#1FBF9E","#4F8EF7","#FFB020","#FF6767","#A78BFA","#00B894","#E17055","#0984E3","#FD79A8"];
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const ACCENTS = {
+  teal:{bg:"var(--teal-light)",fg:"#0F9E82"},
+  coral:{bg:"var(--coral-light)",fg:"#E1444B"},
+  primary:{bg:"var(--primary-light)",fg:"var(--primary-dark)"},
+  amber:{bg:"var(--amber-light)",fg:"#B4780A"},
+  blue:{bg:"var(--blue-light)",fg:"#2E6FDB"}
+};
+
+function defaultCategories(){
+  return [
+    {id:"comida",name:"Comida",color:"#FF6767",predefined:true},
+    {id:"transporte",name:"Transporte",color:"#4F8EF7",predefined:true},
+    {id:"hogar",name:"Hogar",color:"#FFB020",predefined:true},
+    {id:"entretenimiento",name:"Entretenimiento",color:"#A78BFA",predefined:true},
+    {id:"salud",name:"Salud",color:"#1FBF9E",predefined:true},
+    {id:"otros",name:"Otros",color:"#8B8DA1",predefined:true}
+  ];
+}
+
+/* =========================================================
+   ESTADO / PERSISTENCIA
+========================================================= */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      return {
+        accounts: parsed.accounts || [],
+        pockets: parsed.pockets || [],
+        transactions: parsed.transactions || [],
+        categories: (parsed.categories && parsed.categories.length) ? parsed.categories : defaultCategories(),
+        updatedAt: parsed.updatedAt || 0
+      };
+    }
+  }catch(e){ console.error("Error al cargar datos guardados:", e); }
+  return {accounts:[],pockets:[],transactions:[],categories:defaultCategories(),updatedAt:0};
+}
+
+let state = loadState();
+function saveState(){
+  state.updatedAt = Date.now();
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ console.error("Error al guardar datos:", e); toast("No se pudo guardar. Verifica el espacio disponible.","error"); }
+  if(typeof driveState !== "undefined" && driveState.connected){
+    driveState.dirty = true;
+    scheduleDrivePush();
+  }
+}
+
+/* Crea las categorías del sistema si no existen (usuarios nuevos y existentes) */
+function ensureSystemCategories(){
+  const ids = state.categories.map(c=>c.id);
+  let changed = false;
+  if(ids.indexOf("tarjetas_credito")===-1){
+    state.categories.push({id:"tarjetas_credito", name:"Tarjetas de crédito", color:"#6C5CE7", predefined:true});
+    changed = true;
+  }
+  if(ids.indexOf("transferencias")===-1){
+    state.categories.push({id:"transferencias", name:"Transferencias", color:"#0984E3", predefined:true});
+    changed = true;
+  }
+  return changed;
+}
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+function uid(prefix){ return (prefix||"") + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthKey(dateStr){ return (dateStr||"").slice(0,7); }
+function escapeHTML(s){
+  if(s===null||s===undefined) return "";
+  return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function formatMoney(n){
+  n = Number(n)||0;
+  const neg = n < -0.004;
+  const abs = Math.abs(n);
+  const str = abs.toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (neg?"-":"") + "S/ " + str;
+}
+function formatDateShort(s){
+  if(!s) return "";
+  const parts = s.split("-").map(Number);
+  const d = parts[2], m = parts[1];
+  return d + " " + (MESES[m-1]||"");
+}
+function maskDigits(id){
+  let hash = 0;
+  for(let i=0;i<id.length;i++){ hash = (hash*31 + id.charCodeAt(i)) >>> 0; }
+  return String(hash % 10000).padStart(4,"0");
+}
+
+function getAccount(id){ return state.accounts.find(a=>a.id===id); }
+function getCategory(id){ return state.categories.find(c=>c.id===id) || {id:"otros",name:"Otros",color:"#8B8DA1"}; }
+function ahorroAccounts(){ return state.accounts.filter(a=>a.kind==="ahorro"); }
+function tarjetaAccounts(){ return state.accounts.filter(a=>a.kind==="tarjeta"); }
+
+function totalAhorrado(){
+  const cuentas = ahorroAccounts().reduce((s,a)=>s+a.balance,0);
+  const bolsillos = state.pockets.reduce((s,p)=>s+p.balance,0);
+  return cuentas + bolsillos;
+}
+function totalDeuda(){ return tarjetaAccounts().reduce((s,a)=>s+a.debt,0); }
+
+function transactionsInMonth(key){ return state.transactions.filter(t=>monthKey(t.date)===key && !t.system); }
+function monthTotals(key){
+  const txs = transactionsInMonth(key);
+  const ingresos = txs.filter(t=>t.type==="ingreso").reduce((s,t)=>s+t.amount,0);
+  const gastos = txs.filter(t=>t.type==="gasto").reduce((s,t)=>s+t.amount,0);
+  return {ingresos, gastos, balance: ingresos-gastos};
+}
+function pctChange(cur,prev){
+  if(prev===0){ return cur===0 ? null : null; }
+  return ((cur-prev)/Math.abs(prev))*100;
+}
+function categorySpendData(){
+  const curKey = new Date().toISOString().slice(0,7);
+  const gastosMes = state.transactions.filter(t=>t.type==="gasto" && monthKey(t.date)===curKey && !t.system);
+  const byCat = {};
+  gastosMes.forEach(t=>{ byCat[t.categoryId] = (byCat[t.categoryId]||0) + t.amount; });
+  const total = Object.values(byCat).reduce((s,v)=>s+v,0);
+  return Object.entries(byCat)
+    .map(([id,amount])=>({id, amount, pct: total ? (amount/total*100) : 0, cat:getCategory(id)}))
+    .sort((a,b)=>b.amount-a.amount);
+}
+
+/* Aplica o revierte el efecto de una transacción sobre el saldo/deuda de su cuenta */
+function applyTransactionEffect(t, sign){
+  const acc = getAccount(t.accountId);
+  if(!acc) return;
+  if(t.type==="ingreso"){
+    acc.balance += sign * t.amount;
+  } else {
+    if(acc.kind==="tarjeta"){ acc.debt += sign * t.amount; }
+    else { acc.balance -= sign * t.amount; }
+  }
+}
+
+/* Aplica crecimiento mensual compuesto a los bolsillos con tasa configurada */
+function applyMonthlyGrowth(){
+  const now = new Date();
+  const curKey = now.toISOString().slice(0,7);
+  let changed = false;
+  state.pockets.forEach(p=>{
+    if(p.rate && p.rate > 0){
+      const last = p.lastGrowthApplied || monthKey(new Date(p.createdAt).toISOString());
+      const [ly,lm] = last.split("-").map(Number);
+      const [cy,cm] = curKey.split("-").map(Number);
+      const diff = (cy-ly)*12 + (cm-lm);
+      if(diff > 0){
+        p.balance = p.balance * Math.pow(1 + p.rate/100, diff);
+        p.lastGrowthApplied = curKey;
+        changed = true;
+      }
+    }
+  });
+  if(changed) saveState();
+}
+
+/* =========================================================
+   NAVEGACIÓN
+========================================================= */
+const VIEWS = ["dashboard","cuentas","bolsillos","transacciones","categorias"];
+const VIEW_TITLES = {
+  dashboard:{title:"Resumen", sub:"Tu panorama financiero de un vistazo"},
+  cuentas:{title:"Cuentas", sub:"Ahorros y tarjetas de crédito"},
+  bolsillos:{title:"Bolsillos de ahorro", sub:"Guarda dinero con un propósito"},
+  transacciones:{title:"Transacciones", sub:"Todos tus ingresos y gastos"},
+  categorias:{title:"Categorías", sub:"Organiza tus gastos e ingresos"}
+};
+
+function currentView(){
+  return VIEWS.find(v=>{ const el=document.getElementById("view-"+v); return el && !el.hidden; }) || "dashboard";
+}
+function switchView(name){
+  VIEWS.forEach(v=>{ document.getElementById("view-"+v).hidden = (v!==name); });
+  document.querySelectorAll(".nav-item").forEach(el=>el.classList.toggle("active", el.dataset.view===name));
+  document.querySelectorAll(".bn-item").forEach(el=>el.classList.toggle("active", el.dataset.view===name));
+  document.getElementById("pageTitle").textContent = VIEW_TITLES[name].title;
+  document.getElementById("pageSub").textContent = VIEW_TITLES[name].sub;
+  renderView(name);
+  window.scrollTo({top:0,behavior:"instant"});
+}
+function renderView(name){
+  if(name==="dashboard") renderDashboard();
+  else if(name==="cuentas") renderCuentas();
+  else if(name==="bolsillos") renderBolsillos();
+  else if(name==="transacciones") renderTransacciones();
+  else if(name==="categorias") renderCategorias();
+}
+function refresh(){ renderView(currentView()); }
+
+/* =========================================================
+   COMPONENTES HTML REUTILIZABLES
+========================================================= */
+function statCardHTML(iconKey, accentKey, label, value, trendPct, subtext){
+  const a = ACCENTS[accentKey];
+  let extra = "";
+  if(trendPct !== undefined && trendPct !== null){
+    const up = trendPct >= 0;
+    extra = `<span class="trend-pill ${up?'trend-up':'trend-down'}">${up?ICONS.trendUp:ICONS.trendDown}${up?'+':''}${trendPct.toFixed(1)}%</span>`;
+  } else if(subtext){
+    extra = `<span class="stat-sub">${subtext}</span>`;
+  }
+  return `<div class="card stat-card">
+    <span class="stat-icon" style="background:${a.bg};color:${a.fg}">${ICONS[iconKey]}</span>
+    <div class="stat-label">${label}</div>
+    <div class="stat-value">${value}</div>
+    ${extra}
+  </div>`;
+}
+
+function txRowHTML(t){
+  const cat = getCategory(t.categoryId);
+  const acc = getAccount(t.accountId);
+  return `<div class="tx-row">
+    <span class="tx-icon" style="background:${cat.color}1F;color:${cat.color}">${escapeHTML(cat.name.charAt(0).toUpperCase())}</span>
+    <div class="tx-info">
+      <div class="tx-desc">${escapeHTML(t.description || cat.name)}</div>
+      <div class="tx-meta">${formatDateShort(t.date)} · ${escapeHTML(acc ? acc.name : "Cuenta eliminada")}</div>
+    </div>
+    <span class="tx-amount ${t.type==='ingreso'?'positive':'negative'}">${t.type==='ingreso'?'+':'-'}${formatMoney(t.amount)}</span>
+  </div>`;
+}
+
+function txFullRowHTML(t){
+  const cat = getCategory(t.categoryId);
+  const acc = getAccount(t.accountId);
+  const isSystem = !!t.system;
+  return `<div class="tx-full-row">
+    <span class="tx-icon" style="background:${cat.color}1F;color:${cat.color}">${escapeHTML(cat.name.charAt(0).toUpperCase())}</span>
+    <div class="tx-info">
+      <div class="tx-desc">${escapeHTML(t.description || cat.name)}</div>
+      <div class="tx-meta">${formatDateShort(t.date)} · ${escapeHTML(acc ? acc.name : "Cuenta eliminada")}${isSystem?' · automático':''}</div>
+    </div>
+    <span class="pill tx-cat-pill" style="background:${cat.color}1F;color:${cat.color}">${escapeHTML(cat.name)}</span>
+    <span class="tx-amount ${t.type==='ingreso'?'positive':'negative'}">${t.type==='ingreso'?'+':'-'}${formatMoney(t.amount)}</span>
+    <div class="row-actions">
+      ${isSystem ? '' : `<button class="icon-btn" data-action="edit-tx" data-id="${t.id}">${ICONS.edit}</button>`}
+      <button class="icon-btn" data-action="delete-tx" data-id="${t.id}">${ICONS.trash}</button>
+    </div>
+  </div>`;
+}
+
+function accountCardHTML(a){
+  return `<div class="card account-card">
+    <div class="account-card-top">
+      <span class="stat-icon" style="background:var(--blue-light);color:var(--blue);margin-bottom:0;">${ICONS.wallet}</span>
+      <div class="row-actions">
+        <button class="icon-btn" data-action="edit-account" data-id="${a.id}">${ICONS.edit}</button>
+        <button class="icon-btn" data-action="delete-account" data-id="${a.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+    <div class="account-name">${escapeHTML(a.name)}</div>
+    <div class="account-balance">${formatMoney(a.balance)}</div>
+    <span class="pill" style="background:var(--blue-light);color:var(--blue)">Cuenta de ahorros</span>
+  </div>`;
+}
+
+function creditCardHTML(a){
+  return `<div class="credit-card">
+    <div class="cc-top">
+      <span class="cc-chip"></span>
+      <div class="row-actions">
+        <button class="icon-btn" data-action="edit-account" data-id="${a.id}">${ICONS.edit}</button>
+        <button class="icon-btn" data-action="delete-account" data-id="${a.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+    <div class="cc-number">•••• •••• •••• ${maskDigits(a.id)}</div>
+    <div class="cc-bottom">
+      <div>
+        <div class="cc-label">Deuda actual</div>
+        <div class="cc-debt">${formatMoney(a.debt)}</div>
+      </div>
+      <div class="cc-name">${escapeHTML(a.name)}</div>
+    </div>
+  </div>`;
+}
+function creditCardBlockHTML(a){
+  return `<div class="cc-block">
+    ${creditCardHTML(a)}
+    <button class="btn btn-primary btn-block" style="margin-top:12px;" data-action="pagar-tarjeta" data-id="${a.id}">${ICONS.check} Pagar tarjeta</button>
+  </div>`;
+}
+
+function pocketCardHTML(p){
+  const growthPill = p.rate
+    ? `<span class="pill" style="background:var(--teal-light);color:#0F9E82">+${p.rate}% mensual</span>`
+    : `<span class="pill" style="background:var(--surface-soft);color:var(--text-tertiary);border:1px solid var(--border)">Sin crecimiento</span>`;
+  return `<div class="card pocket-card">
+    <div class="account-card-top">
+      <span class="stat-icon" style="background:var(--teal-light);color:var(--teal);margin-bottom:0;">${ICONS.piggy}</span>
+      <div class="row-actions">
+        <button class="icon-btn" data-action="edit-pocket" data-id="${p.id}">${ICONS.edit}</button>
+        <button class="icon-btn" data-action="delete-pocket" data-id="${p.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+    <div class="account-name">${escapeHTML(p.name)}</div>
+    <div class="account-balance">${formatMoney(p.balance)}</div>
+    ${growthPill}
+    <div class="pocket-actions">
+      <button class="btn btn-ghost btn-sm" data-action="meter-bolsillo" data-id="${p.id}">${ICONS.arrowDownToLine} Meter</button>
+      <button class="btn btn-ghost btn-sm" data-action="sacar-bolsillo" data-id="${p.id}">${ICONS.arrowUpFromLine} Sacar</button>
+    </div>
+  </div>`;
+}
+
+function categoryCardHTML(c){
+  const txs = state.transactions.filter(t=>t.categoryId===c.id);
+  const countable = txs.filter(t=> !(t.system && t.system.kind==="transferencia" && t.system.role==="entrada"));
+  const total = countable.reduce((s,t)=>s+t.amount,0);
+  return `<div class="card category-card">
+    <div class="account-card-top">
+      <span class="cat-dot-lg" style="background:${c.color}"></span>
+      <div class="row-actions">
+        <button class="icon-btn" data-action="edit-category" data-id="${c.id}">${ICONS.edit}</button>
+        <button class="icon-btn" data-action="delete-category" data-id="${c.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+    <div class="account-name">${escapeHTML(c.name)}</div>
+    <div class="account-balance" style="font-size:19px;">${formatMoney(total)}</div>
+    <span class="stat-sub" style="margin-top:0;">${txs.length} transacción${txs.length===1?'':'es'}</span>
+  </div>`;
+}
+
+function emptyState(iconKey, title, msg, ctaLabel, ctaView){
+  return `<div class="card empty-state">
+    <div class="empty-icon">${ICONS[iconKey]}</div>
+    <h3>${title}</h3>
+    <p>${msg}</p>
+    ${ctaLabel ? `<button class="btn btn-primary" data-action="nav" data-view="${ctaView}">${ICONS.plus} ${ctaLabel}</button>` : ""}
+  </div>`;
+}
+function emptyInline(msg){
+  return `<div class="empty-inline">${ICONS.inbox}<p>${msg}</p></div>`;
+}
+
+/* =========================================================
+   RENDER: DASHBOARD
+========================================================= */
+let charts = {line:null, donut:null};
+
+function renderDashboard(){
+  const el = document.getElementById("view-dashboard");
+  if(state.accounts.length===0){
+    el.innerHTML = emptyState("wallet","Bienvenido a Mis Finanzas","Crea tu primera cuenta de ahorros o tarjeta de crédito para comenzar a ver tu resumen financiero.","Crear mi primera cuenta","cuentas");
+    return;
+  }
+
+  const now = new Date();
+  const curKey = now.toISOString().slice(0,7);
+  const prevD = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevKey = prevD.toISOString().slice(0,7);
+  const cur = monthTotals(curKey);
+  const prev = monthTotals(prevKey);
+  const ingresosTrend = pctChange(cur.ingresos, prev.ingresos);
+  const gastosTrend = pctChange(cur.gastos, prev.gastos);
+  const balanceTrend = pctChange(cur.balance, prev.balance);
+  const deuda = totalDeuda();
+  const ahorrado = totalAhorrado();
+  const catData = categorySpendData();
+  const recent = [...state.transactions].sort((a,b)=> b.date.localeCompare(a.date) || (b.createdAt-a.createdAt)).slice(0,6);
+
+  let donutSection;
+  if(catData.length===0){
+    donutSection = emptyInline("Sin gastos este mes");
+  } else {
+    const totalGasto = catData.reduce((s,c)=>s+c.amount,0);
+    donutSection = `<div class="donut-wrap">
+      <div class="donut-canvas-wrap">
+        <canvas id="donutChart"></canvas>
+        <div class="donut-center"><span class="donut-total">${formatMoney(totalGasto)}</span><span class="donut-total-label">Total</span></div>
+      </div>
+      <div class="legend-list">
+        ${catData.map(c=>`<div class="legend-row">
+          <span class="legend-dot" style="background:${c.cat.color}"></span>
+          <span class="legend-name">${escapeHTML(c.cat.name)}</span>
+          <span class="legend-amount">${formatMoney(c.amount)}</span>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      ${statCardHTML("trendUp","teal","Ingresos del mes",formatMoney(cur.ingresos),ingresosTrend)}
+      ${statCardHTML("trendDown","coral","Gastos del mes",formatMoney(cur.gastos),gastosTrend)}
+      ${statCardHTML("wallet","primary","Balance del mes",formatMoney(cur.balance),balanceTrend)}
+      ${statCardHTML("card","amber","Deuda en tarjetas",formatMoney(deuda),undefined, tarjetaAccounts().length + " tarjeta(s)")}
+      ${statCardHTML("piggy","blue","Total ahorrado",formatMoney(ahorrado),undefined,"Cuentas + bolsillos")}
+    </div>
+    <div class="charts-row">
+      <div class="card chart-card">
+        <div class="chart-head"><h3>Ingresos vs Gastos</h3><span class="chart-sub">Últimos 6 meses</span></div>
+        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-head"><h3>Gastos por categoría</h3><span class="chart-sub">Este mes</span></div>
+        ${donutSection}
+      </div>
+    </div>
+    <div class="card">
+      <div class="chart-head"><h3>Transacciones recientes</h3><span class="chart-sub" style="cursor:pointer;" data-action="nav" data-view="transacciones">Ver todas</span></div>
+      ${recent.length ? recent.map(txRowHTML).join("") : emptyInline("Aún no hay transacciones")}
+    </div>
+  `;
+
+  renderLineChart();
+  if(catData.length) renderDonutChart(catData);
+}
+
+function renderLineChart(){
+  const canvas = document.getElementById("lineChart");
+  if(!canvas) return;
+  const now = new Date();
+  const months = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({key: d.toISOString().slice(0,7), label: MESES[d.getMonth()]});
+  }
+  const ingresosData = months.map(m=>monthTotals(m.key).ingresos);
+  const gastosData = months.map(m=>monthTotals(m.key).gastos);
+
+  if(charts.line){ charts.line.destroy(); charts.line=null; }
+  const ctx = canvas.getContext("2d");
+  const tealGrad = ctx.createLinearGradient(0,0,0,230);
+  tealGrad.addColorStop(0,"rgba(31,191,158,.28)");
+  tealGrad.addColorStop(1,"rgba(31,191,158,0)");
+  const coralGrad = ctx.createLinearGradient(0,0,0,230);
+  coralGrad.addColorStop(0,"rgba(255,103,103,.24)");
+  coralGrad.addColorStop(1,"rgba(255,103,103,0)");
+
+  charts.line = new Chart(canvas, {
+    type:"line",
+    data:{
+      labels: months.map(m=>m.label),
+      datasets:[
+        {label:"Ingresos", data:ingresosData, borderColor:"#1FBF9E", backgroundColor:tealGrad, fill:true, tension:.4, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:"#1FBF9E", borderWidth:2.5},
+        {label:"Gastos", data:gastosData, borderColor:"#FF6767", backgroundColor:coralGrad, fill:true, tension:.4, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:"#FF6767", borderWidth:2.5}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index", intersect:false},
+      plugins:{
+        legend:{display:true, position:"top", align:"end", labels:{boxWidth:8, boxHeight:8, usePointStyle:true, pointStyle:"circle", font:{family:"Inter", size:12, weight:"600"}, color:"#8B8DA1", padding:16}},
+        tooltip:{backgroundColor:"#1E1F2E", padding:10, cornerRadius:10, titleFont:{family:"Outfit", weight:"600"}, bodyFont:{family:"Inter"}, callbacks:{ label:(c)=> " " + c.dataset.label + ": " + formatMoney(c.raw) }}
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:"#B7B9CC", font:{family:"Inter", size:11.5}} },
+        y:{ grid:{color:"#EEF0F8"}, border:{display:false}, ticks:{color:"#B7B9CC", font:{family:"Inter", size:11}, callback:(v)=> v>=1000 ? "S/ "+(v/1000)+"k" : "S/ "+v } }
+      }
+    }
+  });
+}
+
+function renderDonutChart(catData){
+  const canvas = document.getElementById("donutChart");
+  if(!canvas) return;
+  if(charts.donut){ charts.donut.destroy(); charts.donut=null; }
+  charts.donut = new Chart(canvas, {
+    type:"doughnut",
+    data:{
+      labels: catData.map(c=>c.cat.name),
+      datasets:[{ data: catData.map(c=>c.amount), backgroundColor: catData.map(c=>c.cat.color), borderWidth:0, hoverOffset:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:"72%",
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:"#1E1F2E", padding:10, cornerRadius:10, callbacks:{ label:(c)=> " " + c.label + ": " + formatMoney(c.raw) }}
+      }
+    }
+  });
+}
+
+/* =========================================================
+   RENDER: CUENTAS
+========================================================= */
+function renderCuentas(){
+  const el = document.getElementById("view-cuentas");
+  let html = `<div class="section-actions">
+    <button class="btn btn-ghost" data-action="new-transfer">${ICONS.swap} Transferir entre cuentas</button>
+    <button class="btn btn-primary" data-action="new-account">${ICONS.plus} Nueva cuenta</button>
+  </div>`;
+
+  if(state.accounts.length===0){
+    html += emptyState("wallet","Aún no tienes cuentas","Crea una cuenta de ahorros o una tarjeta de crédito para empezar a organizar tu dinero.", null, null);
+    el.innerHTML = html;
+    return;
+  }
+
+  const ahorros = ahorroAccounts();
+  const tarjetas = tarjetaAccounts();
+
+  html += `<div class="section-title">Cuentas de ahorro</div>`;
+  html += ahorros.length
+    ? `<div class="accounts-grid" style="margin-bottom:26px;">${ahorros.map(accountCardHTML).join("")}</div>`
+    : `<div class="card" style="margin-bottom:26px;">${emptyInline("No tienes cuentas de ahorro todavía")}</div>`;
+
+  html += `<div class="section-title">Tarjetas de crédito</div>`;
+  html += tarjetas.length
+    ? `<div class="cc-grid">${tarjetas.map(creditCardBlockHTML).join("")}</div>`
+    : `<div class="card">${emptyInline("No tienes tarjetas de crédito todavía")}</div>`;
+
+  el.innerHTML = html;
+}
+
+/* =========================================================
+   RENDER: BOLSILLOS
+========================================================= */
+function renderBolsillos(){
+  const el = document.getElementById("view-bolsillos");
+  let html = `<div class="section-actions"><button class="btn btn-primary" data-action="new-pocket">${ICONS.plus} Nuevo bolsillo</button></div>`;
+  if(state.pockets.length===0){
+    html += emptyState("piggy","Crea tu primer bolsillo","Los bolsillos te ayudan a separar dinero para metas específicas, con o sin crecimiento mensual.", null, null);
+  } else {
+    html += `<div class="pockets-grid">${state.pockets.map(pocketCardHTML).join("")}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* =========================================================
+   RENDER: TRANSACCIONES
+========================================================= */
+let txFilters = {type:"todos", accountId:"todos", categoryId:"todos", q:""};
+
+function getFilteredTx(){
+  return state.transactions.filter(t=>{
+    if(txFilters.type!=="todos" && t.type!==txFilters.type) return false;
+    if(txFilters.accountId!=="todos" && t.accountId!==txFilters.accountId) return false;
+    if(txFilters.categoryId!=="todos" && t.categoryId!==txFilters.categoryId) return false;
+    if(txFilters.q && !(t.description||"").toLowerCase().includes(txFilters.q)) return false;
+    return true;
+  }).sort((a,b)=> b.date.localeCompare(a.date) || (b.createdAt-a.createdAt));
+}
+
+function renderTxList(){
+  const container = document.getElementById("txListContainer");
+  if(!container) return;
+  const filtered = getFilteredTx();
+  container.innerHTML = filtered.length
+    ? `<div class="card">${filtered.map(txFullRowHTML).join("")}</div>`
+    : `<div class="card">${emptyInline("No hay transacciones con estos filtros")}</div>`;
+}
+
+function onFilterChange(){
+  txFilters.type = document.getElementById("filterType").value;
+  txFilters.accountId = document.getElementById("filterAccount").value;
+  txFilters.categoryId = document.getElementById("filterCategory").value;
+  txFilters.q = document.getElementById("filterSearch").value.toLowerCase();
+  renderTxList();
+}
+
+function renderTransacciones(){
+  const el = document.getElementById("view-transacciones");
+  let html = `<div class="section-actions"><button class="btn btn-primary" data-action="new-tx">${ICONS.plus} Nueva transacción</button></div>`;
+
+  html += `<div class="card filter-bar">
+    <select id="filterType">
+      <option value="todos">Todos los tipos</option>
+      <option value="ingreso">Ingresos</option>
+      <option value="gasto">Gastos</option>
+    </select>
+    <select id="filterAccount">
+      <option value="todos">Todas las cuentas</option>
+      ${state.accounts.map(a=>`<option value="${a.id}">${escapeHTML(a.name)}</option>`).join("")}
+    </select>
+    <select id="filterCategory">
+      <option value="todos">Todas las categorías</option>
+      ${state.categories.map(c=>`<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("")}
+    </select>
+    <input type="text" id="filterSearch" placeholder="Buscar por descripción…">
+  </div>`;
+
+  html += `<div id="txListContainer"></div>`;
+  el.innerHTML = html;
+
+  document.getElementById("filterType").value = txFilters.type;
+  document.getElementById("filterAccount").value = txFilters.accountId;
+  document.getElementById("filterCategory").value = txFilters.categoryId;
+  document.getElementById("filterSearch").value = txFilters.q;
+
+  document.getElementById("filterType").addEventListener("change", onFilterChange);
+  document.getElementById("filterAccount").addEventListener("change", onFilterChange);
+  document.getElementById("filterCategory").addEventListener("change", onFilterChange);
+  document.getElementById("filterSearch").addEventListener("input", onFilterChange);
+
+  renderTxList();
+}
+
+/* =========================================================
+   RENDER: CATEGORÍAS
+========================================================= */
+function renderCategorias(){
+  const el = document.getElementById("view-categorias");
+  let html = `<div class="section-actions"><button class="btn btn-primary" data-action="new-category">${ICONS.plus} Nueva categoría</button></div>`;
+  html += `<div class="categories-grid">${state.categories.map(categoryCardHTML).join("")}</div>`;
+  el.innerHTML = html;
+}
+
+/* =========================================================
+   MODALES
+========================================================= */
+function overlayEl(){ return document.getElementById("modalOverlay"); }
+function modalBoxEl(){ return document.getElementById("modalBox"); }
+
+function openModal(html){
+  modalBoxEl().innerHTML = html;
+  overlayEl().classList.add("active");
+  document.body.style.overflow = "hidden";
+  const firstInput = modalBoxEl().querySelector("input,select,textarea");
+  if(firstInput){ setTimeout(()=>firstInput.focus(), 60); }
+}
+function closeModal(){
+  overlayEl().classList.remove("active");
+  document.body.style.overflow = "";
+  pendingAction = null;
+  setTimeout(()=>{ modalBoxEl().innerHTML = ""; }, 200);
+}
+
+/* ---- Modal: Cuenta ---- */
+function modalCuenta(existing){
+  const isEdit = !!existing;
+  const kind = existing ? existing.kind : "ahorro";
+  const amountVal = existing ? (existing.kind==="tarjeta" ? existing.debt : existing.balance).toFixed(2) : "";
+  openModal(`
+    <div class="modal-head"><h3>${isEdit?"Editar cuenta":"Nueva cuenta"}</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-cuenta" data-id="${existing?existing.id:''}">
+      <div class="field">
+        <label>Tipo de cuenta</label>
+        <div class="segmented" id="cuentaTipoSeg">
+          <button type="button" data-val="ahorro" class="${kind==='ahorro'?'active':''}" ${isEdit&&kind!=='ahorro'?'disabled':''}>Ahorros</button>
+          <button type="button" data-val="tarjeta" class="${kind==='tarjeta'?'active':''}" ${isEdit&&kind!=='tarjeta'?'disabled':''}>Tarjeta de crédito</button>
+        </div>
+        <input type="hidden" name="kind" value="${kind}">
+      </div>
+      <div class="field">
+        <label>Nombre de la cuenta</label>
+        <input type="text" name="name" placeholder="Ej. Cuenta principal" value="${existing?escapeHTML(existing.name):''}" required maxlength="40">
+      </div>
+      <div class="field">
+        <label id="montoLabel">${kind==='tarjeta'?'Deuda actual':'Saldo actual'}</label>
+        <input type="number" name="amount" step="0.01" min="0" value="${amountVal}" placeholder="0.00" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${isEdit?'Guardar cambios':'Crear cuenta'}</button>
+      </div>
+    </form>
+  `);
+  if(!isEdit){
+    document.querySelectorAll("#cuentaTipoSeg button").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        document.querySelectorAll("#cuentaTipoSeg button").forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        document.querySelector('#form-cuenta input[name=kind]').value = b.dataset.val;
+        document.getElementById("montoLabel").textContent = b.dataset.val==="tarjeta" ? "Deuda actual" : "Saldo actual";
+      });
+    });
+  }
+}
+
+function handleCuentaSubmit(form){
+  const id = form.dataset.id;
+  const kind = form.kind.value;
+  const name = form.name.value.trim();
+  const amount = parseFloat(form.amount.value);
+  if(!name){ toast("Ingresa un nombre para la cuenta.","error"); return; }
+  if(isNaN(amount) || amount < 0){ toast("Ingresa un monto válido.","error"); return; }
+
+  if(id){
+    const acc = getAccount(id);
+    acc.name = name;
+    if(kind==="tarjeta"){ acc.debt = amount; } else { acc.balance = amount; }
+    toast("Cuenta actualizada.");
+  } else {
+    const acc = {id:uid("acc_"), kind, name, createdAt:Date.now()};
+    if(kind==="tarjeta"){ acc.debt = amount; } else { acc.balance = amount; }
+    state.accounts.push(acc);
+    toast("Cuenta creada.");
+  }
+  saveState(); closeModal(); refresh();
+}
+
+/* ---- Modal: Bolsillo ---- */
+function modalPocket(existing){
+  const isEdit = !!existing;
+  openModal(`
+    <div class="modal-head"><h3>${isEdit?"Editar bolsillo":"Nuevo bolsillo"}</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-pocket" data-id="${existing?existing.id:''}">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" name="name" placeholder="Ej. Viaje a Cusco" value="${existing?escapeHTML(existing.name):''}" required maxlength="40">
+      </div>
+      <div class="field">
+        <label>${isEdit?'Saldo actual':'Saldo inicial (opcional)'}</label>
+        <input type="number" name="amount" step="0.01" min="0" value="${existing?existing.balance.toFixed(2):'0'}" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Tasa de crecimiento mensual % (opcional)</label>
+        <input type="number" name="rate" step="0.01" min="0" max="100" placeholder="Ej. 1.5" value="${existing && existing.rate!=null ? existing.rate : ''}">
+      </div>
+      <p class="field-hint">Si dejas la tasa vacía, el bolsillo no crecerá automáticamente.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${isEdit?'Guardar cambios':'Crear bolsillo'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function handlePocketSubmit(form){
+  const id = form.dataset.id;
+  const name = form.name.value.trim();
+  const rateRaw = form.rate.value;
+  const rate = rateRaw==="" ? null : parseFloat(rateRaw);
+  const amount = parseFloat(form.amount.value) || 0;
+  if(!name){ toast("Ingresa un nombre para el bolsillo.","error"); return; }
+  if(rate!==null && (isNaN(rate) || rate<0 || rate>100)){ toast("La tasa debe ser un número entre 0 y 100.","error"); return; }
+
+  if(id){
+    const p = state.pockets.find(x=>x.id===id);
+    p.name = name; p.rate = rate; p.balance = amount;
+    toast("Bolsillo actualizado.");
+  } else {
+    const curKey = new Date().toISOString().slice(0,7);
+    state.pockets.push({id:uid("pkt_"), name, rate, balance:amount, createdAt:Date.now(), lastGrowthApplied:curKey});
+    toast("Bolsillo creado.");
+  }
+  saveState(); closeModal(); refresh();
+}
+
+/* ---- Modal: Meter / Sacar dinero de bolsillo ---- */
+function modalMeterSacar(pocketId, mode){
+  const p = state.pockets.find(x=>x.id===pocketId);
+  if(!p) return;
+  const accs = ahorroAccounts();
+  openModal(`
+    <div class="modal-head"><h3>${mode==='meter'?'Meter dinero a':'Sacar dinero de'} "${escapeHTML(p.name)}"</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-meter-sacar" data-id="${pocketId}" data-mode="${mode}">
+      <div class="field">
+        <label>Monto</label>
+        <input type="number" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="field">
+        <label>${mode==='meter'?'Descontar de (opcional)':'Depositar en (opcional)'}</label>
+        <select name="accountId">
+          <option value="">No usar ninguna cuenta</option>
+          ${accs.map(a=>`<option value="${a.id}">${escapeHTML(a.name)} — ${formatMoney(a.balance)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${mode==='meter'?'Meter dinero':'Sacar dinero'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function handleMeterSacarSubmit(form){
+  const id = form.dataset.id;
+  const mode = form.dataset.mode;
+  const amount = parseFloat(form.amount.value);
+  const accountId = form.accountId.value;
+  if(isNaN(amount) || amount<=0){ toast("Ingresa un monto válido.","error"); return; }
+  const p = state.pockets.find(x=>x.id===id);
+  if(!p) return;
+  if(mode==="sacar" && amount > p.balance){ toast("El bolsillo no tiene suficiente saldo.","error"); return; }
+
+  if(accountId){
+    const acc = getAccount(accountId);
+    if(acc){
+      if(mode==="meter"){
+        if(amount > acc.balance){ toast("Saldo insuficiente en la cuenta seleccionada.","error"); return; }
+        acc.balance -= amount;
+      } else {
+        acc.balance += amount;
+      }
+    }
+  }
+  p.balance += (mode==="meter" ? amount : -amount);
+  saveState(); closeModal();
+  toast(mode==="meter" ? "Dinero agregado al bolsillo." : "Dinero retirado del bolsillo.");
+  refresh();
+}
+
+/* ---- Modal: Pagar tarjeta ---- */
+function modalPagarTarjeta(accountId){
+  const card = getAccount(accountId);
+  if(!card) return;
+  const accs = ahorroAccounts();
+  if(accs.length===0){ toast("Necesitas una cuenta de ahorros para pagar la tarjeta.","error"); return; }
+  openModal(`
+    <div class="modal-head"><h3>Pagar tarjeta "${escapeHTML(card.name)}"</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <p class="field-hint" style="margin-bottom:4px;">Deuda actual: <strong style="color:var(--text);">${formatMoney(card.debt)}</strong></p>
+    <p class="field-hint" style="margin-bottom:16px;">Se registrará como transacción en la categoría "Tarjetas de crédito".</p>
+    <form id="form-pagar-tarjeta" data-id="${accountId}">
+      <div class="field">
+        <label>Monto a pagar</label>
+        <input type="number" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="field">
+        <label>Cuenta de origen</label>
+        <select name="accountId" required>
+          ${accs.map(a=>`<option value="${a.id}">${escapeHTML(a.name)} — ${formatMoney(a.balance)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Pagar</button>
+      </div>
+    </form>
+  `);
+}
+
+function handlePagarTarjetaSubmit(form){
+  const cardId = form.dataset.id;
+  const amount = parseFloat(form.amount.value);
+  const accountId = form.accountId.value;
+  if(isNaN(amount) || amount<=0){ toast("Ingresa un monto válido.","error"); return; }
+  const card = getAccount(cardId);
+  const acc = getAccount(accountId);
+  if(!card || !acc) return;
+  if(amount > acc.balance){ toast("Saldo insuficiente en la cuenta seleccionada.","error"); return; }
+
+  const pagoReal = Math.min(amount, card.debt);
+  if(pagoReal <= 0){ toast("Esta tarjeta no tiene deuda pendiente.","error"); return; }
+
+  if(ensureSystemCategories()) saveState();
+  const t = {
+    id: uid("tx_"), type:"gasto", amount: pagoReal, date: todayStr(),
+    description: "Pago de tarjeta — " + card.name,
+    categoryId: "tarjetas_credito", accountId: accountId, createdAt: Date.now(),
+    system: {kind:"pago_tarjeta", cardId: cardId, debtAmount: pagoReal}
+  };
+  applyTransactionEffect(t, 1); // descuenta el saldo de la cuenta de ahorros
+  card.debt -= pagoReal;
+  state.transactions.push(t);
+
+  saveState(); closeModal();
+  toast(pagoReal < amount ? ("Se pagó el total de la deuda: " + formatMoney(pagoReal)) : "Pago realizado correctamente.");
+  refresh();
+}
+
+/* ---- Modal: Transferencia entre cuentas de ahorro ---- */
+function modalTransfer(){
+  const accs = ahorroAccounts();
+  if(accs.length < 2){ toast("Necesitas al menos 2 cuentas de ahorro para transferir.","error"); return; }
+  openModal(`
+    <div class="modal-head"><h3>Transferir entre cuentas</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-transfer">
+      <div class="field">
+        <label>Cuenta origen</label>
+        <select name="fromAccountId" id="transferFrom" required>
+          ${accs.map(a=>`<option value="${a.id}">${escapeHTML(a.name)} — ${formatMoney(a.balance)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label>Cuenta destino</label>
+        <select name="toAccountId" id="transferTo" required></select>
+      </div>
+      <div class="field">
+        <label>Monto</label>
+        <input type="number" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" name="date" value="${todayStr()}" required>
+      </div>
+      <div class="field">
+        <label>Descripción (opcional)</label>
+        <input type="text" name="description" placeholder="Ej. Ahorro mensual" maxlength="80">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Transferir</button>
+      </div>
+    </form>
+  `);
+  function refreshToOptions(){
+    const fromId = document.getElementById("transferFrom").value;
+    const toSel = document.getElementById("transferTo");
+    const prevVal = toSel.value;
+    toSel.innerHTML = accs.filter(a=>a.id!==fromId).map(a=>`<option value="${a.id}">${escapeHTML(a.name)} — ${formatMoney(a.balance)}</option>`).join("");
+    if(prevVal && [...toSel.options].some(o=>o.value===prevVal)) toSel.value = prevVal;
+  }
+  document.getElementById("transferFrom").addEventListener("change", refreshToOptions);
+  refreshToOptions();
+}
+
+function handleTransferSubmit(form){
+  const fromId = form.fromAccountId.value;
+  const toId = form.toAccountId.value;
+  const amount = parseFloat(form.amount.value);
+  const date = form.date.value;
+  const desc = form.description.value.trim();
+  if(!fromId || !toId || fromId===toId){ toast("Elige dos cuentas distintas.","error"); return; }
+  if(isNaN(amount) || amount<=0){ toast("Ingresa un monto válido.","error"); return; }
+  if(!date){ toast("Selecciona una fecha.","error"); return; }
+  const fromAcc = getAccount(fromId), toAcc = getAccount(toId);
+  if(!fromAcc || !toAcc) return;
+  if(amount > fromAcc.balance){ toast("Saldo insuficiente en la cuenta de origen.","error"); return; }
+
+  if(ensureSystemCategories()) saveState();
+  const groupId = uid("trf_");
+  const salida = {
+    id: uid("tx_"), type:"gasto", amount, date,
+    description: desc || ("Transferencia a " + toAcc.name),
+    categoryId:"transferencias", accountId:fromId, createdAt:Date.now(),
+    system:{kind:"transferencia", groupId, role:"salida", pairAccountId:toId}
+  };
+  const entrada = {
+    id: uid("tx_"), type:"ingreso", amount, date,
+    description: desc || ("Transferencia desde " + fromAcc.name),
+    categoryId:"transferencias", accountId:toId, createdAt:Date.now()+1,
+    system:{kind:"transferencia", groupId, role:"entrada", pairAccountId:fromId}
+  };
+  applyTransactionEffect(salida, 1);
+  applyTransactionEffect(entrada, 1);
+  state.transactions.push(salida, entrada);
+
+  saveState(); closeModal();
+  toast("Transferencia realizada.");
+  refresh();
+}
+
+/* ---- Modal: Transacción ---- */
+function accountOptionsHTML(type, selected){
+  const list = type==="ingreso" ? ahorroAccounts() : state.accounts;
+  if(list.length===0) return `<option value="">No tienes cuentas disponibles</option>`;
+  return `<option value="">Selecciona una cuenta</option>` +
+    list.map(a=>`<option value="${a.id}" ${a.id===selected?'selected':''}>${escapeHTML(a.name)}${a.kind==='tarjeta'?' (tarjeta)':''}</option>`).join("");
+}
+function categoryOptionsHTML(selected){
+  return state.categories.map(c=>`<option value="${c.id}" ${c.id===selected?'selected':''}>${escapeHTML(c.name)}</option>`).join("")
+    + `<option value="__new__">+ Crear nueva categoría…</option>`;
+}
+
+function modalTransaccion(existing){
+  const isEdit = !!existing;
+  if(!isEdit && state.accounts.length===0){ toast("Primero crea una cuenta para registrar transacciones.","error"); return; }
+  const type = existing ? existing.type : "gasto";
+  openModal(`
+    <div class="modal-head"><h3>${isEdit?"Editar transacción":"Nueva transacción"}</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-tx" data-id="${existing?existing.id:''}">
+      <div class="field">
+        <div class="segmented" id="txTipoSeg">
+          <button type="button" data-val="ingreso" class="${type==='ingreso'?'active':''}">Ingreso</button>
+          <button type="button" data-val="gasto" class="${type==='gasto'?'active':''}">Gasto</button>
+        </div>
+        <input type="hidden" name="type" value="${type}">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Monto</label><input type="number" name="amount" step="0.01" min="0.01" placeholder="0.00" value="${existing?existing.amount:''}" required></div>
+        <div class="field"><label>Fecha</label><input type="date" name="date" value="${existing?existing.date:todayStr()}" required></div>
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <input type="text" name="description" placeholder="Ej. Almuerzo en el trabajo" value="${existing?escapeHTML(existing.description):''}" maxlength="80">
+      </div>
+      <div class="field">
+        <label>Categoría</label>
+        <select name="categoryId" id="txCategorySelect">${categoryOptionsHTML(existing?existing.categoryId:null)}</select>
+        <input type="text" name="newCategoryName" id="txNewCategoryInput" placeholder="Nombre de la nueva categoría" style="margin-top:8px;display:none;">
+      </div>
+      <div class="field">
+        <label>Cuenta</label>
+        <select name="accountId" id="txAccountSelect">${accountOptionsHTML(type, existing?existing.accountId:null)}</select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${isEdit?'Guardar cambios':'Registrar'}</button>
+      </div>
+    </form>
+  `);
+  document.querySelectorAll("#txTipoSeg button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      document.querySelectorAll("#txTipoSeg button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      document.querySelector('#form-tx input[name=type]').value = b.dataset.val;
+      document.getElementById("txAccountSelect").innerHTML = accountOptionsHTML(b.dataset.val, null);
+    });
+  });
+  document.getElementById("txCategorySelect").addEventListener("change", (e)=>{
+    document.getElementById("txNewCategoryInput").style.display = e.target.value==="__new__" ? "block" : "none";
+  });
+}
+
+function handleTxSubmit(form){
+  const id = form.dataset.id;
+  const type = form.type.value;
+  const amount = parseFloat(form.amount.value);
+  const date = form.date.value;
+  const description = form.description.value.trim();
+  let categoryId = form.categoryId.value;
+  const accountId = form.accountId.value;
+  const newCategoryName = form.newCategoryName ? form.newCategoryName.value.trim() : "";
+
+  if(categoryId==="__new__"){
+    if(!newCategoryName){ toast("Escribe el nombre de la nueva categoría.","error"); return; }
+    const color = PALETTE[state.categories.length % PALETTE.length];
+    const newCat = {id:uid("cat_"), name:newCategoryName, color, predefined:false};
+    state.categories.push(newCat);
+    categoryId = newCat.id;
+  }
+
+  if(isNaN(amount) || amount<=0){ toast("Ingresa un monto válido.","error"); return; }
+  if(!date){ toast("Selecciona una fecha.","error"); return; }
+  if(!accountId){ toast("Selecciona una cuenta.","error"); return; }
+
+  if(id){
+    const t = state.transactions.find(x=>x.id===id);
+    applyTransactionEffect(t, -1);
+    t.type=type; t.amount=amount; t.date=date; t.description=description; t.categoryId=categoryId; t.accountId=accountId;
+    applyTransactionEffect(t, 1);
+    toast("Transacción actualizada.");
+  } else {
+    const t = {id:uid("tx_"), type, amount, date, description, categoryId, accountId, createdAt:Date.now()};
+    applyTransactionEffect(t, 1);
+    state.transactions.push(t);
+    toast("Transacción registrada.");
+  }
+  saveState(); closeModal(); refresh();
+}
+
+/* ---- Modal: Categoría ---- */
+function modalCategory(existing){
+  const isEdit = !!existing;
+  const color = existing ? existing.color : PALETTE[state.categories.length % PALETTE.length];
+  openModal(`
+    <div class="modal-head"><h3>${isEdit?"Editar categoría":"Nueva categoría"}</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <form id="form-category" data-id="${existing?existing.id:''}">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" name="name" placeholder="Ej. Educación" value="${existing?escapeHTML(existing.name):''}" required maxlength="24">
+      </div>
+      <div class="field">
+        <label>Color</label>
+        <input type="color" name="color" value="${color}">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${isEdit?'Guardar cambios':'Crear categoría'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function handleCategorySubmit(form){
+  const id = form.dataset.id;
+  const name = form.name.value.trim();
+  const color = form.color.value;
+  if(!name){ toast("Ingresa un nombre para la categoría.","error"); return; }
+
+  if(id){
+    const c = state.categories.find(x=>x.id===id);
+    c.name = name; c.color = color;
+    toast("Categoría actualizada.");
+  } else {
+    state.categories.push({id:uid("cat_"), name, color, predefined:false});
+    toast("Categoría creada.");
+  }
+  saveState(); closeModal(); refresh();
+}
+
+/* ---- Confirmación de eliminación ---- */
+let pendingAction = null;
+
+function askDelete(type, id, message){
+  pendingAction = {type, id};
+  openModal(`
+    <div class="modal-head"><h3>¿Eliminar?</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    <p class="field-hint" style="margin-bottom:22px;">${message}</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+      <button type="button" class="btn btn-danger" data-action="confirm-delete">${ICONS.trash} Eliminar</button>
+    </div>
+  `);
+}
+
+function confirmDelete(){
+  if(!pendingAction) return;
+  const {type, id} = pendingAction;
+
+  if(type==="account"){
+    state.transactions = state.transactions.filter(t=>t.accountId!==id);
+    state.accounts = state.accounts.filter(a=>a.id!==id);
+    toast("Cuenta eliminada.");
+  } else if(type==="pocket"){
+    state.pockets = state.pockets.filter(p=>p.id!==id);
+    toast("Bolsillo eliminado.");
+  } else if(type==="tx"){
+    const t = state.transactions.find(x=>x.id===id);
+    if(t){
+      applyTransactionEffect(t, -1);
+      if(t.system && t.system.kind==="pago_tarjeta"){
+        const card = getAccount(t.system.cardId);
+        if(card){ card.debt += t.system.debtAmount; }
+      }
+      if(t.system && t.system.kind==="transferencia" && t.system.groupId){
+        const partner = state.transactions.find(x=> x.system && x.system.groupId===t.system.groupId && x.id!==t.id);
+        if(partner){
+          applyTransactionEffect(partner, -1);
+          state.transactions = state.transactions.filter(x=>x.id!==partner.id);
+        }
+      }
+      state.transactions = state.transactions.filter(x=>x.id!==id);
+    }
+    toast("Transacción eliminada.");
+  } else if(type==="category"){
+    const fallback = state.categories.find(c=>c.id==="otros") || state.categories.find(c=>c.id!==id) || null;
+    if(fallback){
+      state.transactions.forEach(t=>{ if(t.categoryId===id) t.categoryId = fallback.id; });
+    }
+    state.categories = state.categories.filter(c=>c.id!==id);
+    toast("Categoría eliminada.");
+  }
+  saveState(); closeModal(); refresh();
+}
+
+/* =========================================================
+   TOASTS
+========================================================= */
+function toast(msg, type){
+  const container = document.getElementById("toastContainer");
+  const el = document.createElement("div");
+  el.className = "toast" + (type==="error" ? " error" : "");
+  el.innerHTML = `${type==="error"?ICONS.alert:ICONS.check}<span>${escapeHTML(msg)}</span>`;
+  container.appendChild(el);
+  setTimeout(()=>{
+    el.style.opacity = "0";
+    el.style.transform = "translateY(8px)";
+    setTimeout(()=>el.remove(), 260);
+  }, 2700);
+}
+
+/* =========================================================
+   GOOGLE DRIVE: SINCRONIZACIÓN
+========================================================= */
+const DRIVE_FILE_NAME = "mis-finanzas-datos.json";
+let tokenClient = null;
+let drivePushTimer = null;
+let driveState = {
+  connected:false,
+  accessToken:null,
+  email:null,
+  fileId: null,
+  syncing:false,
+  lastSync:null,
+  dirty:false
+};
+
+function timeAgo(ts){
+  if(!ts) return "nunca";
+  const diff = Math.max(0, Date.now()-ts);
+  const s = Math.floor(diff/1000);
+  if(s<5) return "justo ahora";
+  if(s<60) return "hace " + s + "s";
+  const m = Math.floor(s/60);
+  if(m<60) return "hace " + m + "min";
+  const h = Math.floor(m/60);
+  if(h<24) return "hace " + h + "h";
+  const d = Math.floor(h/24);
+  return "hace " + d + "d";
+}
+
+function updateSyncBadge(){
+  const el = document.getElementById("syncBadge");
+  if(!el) return;
+  if(!GOOGLE_CLIENT_ID){
+    el.className = "sync-badge";
+    el.innerHTML = ICONS.cloud + "<span>Sincronización</span>";
+  } else if(driveState.syncing){
+    el.className = "sync-badge syncing";
+    el.innerHTML = ICONS.sync + "<span>Sincronizando…</span>";
+  } else if(driveState.connected){
+    el.className = "sync-badge connected";
+    el.innerHTML = ICONS.cloud + "<span>Sincronizado</span>";
+  } else {
+    el.className = "sync-badge";
+    el.innerHTML = ICONS.cloud + "<span>Conectar Drive</span>";
+  }
+}
+
+function modalSync(){
+  let body;
+  if(!GOOGLE_CLIENT_ID){
+    body = `
+      <p class="field-hint" style="margin-bottom:14px;">La sincronización con Google Drive no está configurada todavía en este archivo.</p>
+      <div class="card" style="background:var(--surface-soft);border-style:dashed;font-size:12.6px;line-height:1.65;padding:16px;">
+        <strong>Para activarla:</strong>
+        <ol style="margin:10px 0 0 18px;padding:0;">
+          <li>Crea credenciales OAuth (tipo "Aplicación web") en Google Cloud Console.</li>
+          <li>Agrega como origen autorizado la URL https:// donde alojes este archivo.</li>
+          <li>Copia el "Client ID" y pégalo en la constante <code style="background:var(--border);padding:1px 5px;border-radius:5px;font-family:monospace;">GOOGLE_CLIENT_ID</code>, al inicio del archivo.</li>
+          <li>Vuelve a abrir la app.</li>
+        </ol>
+      </div>
+    `;
+  } else if(!driveState.connected){
+    body = `
+      <p class="field-hint" style="margin-bottom:18px;">Conecta tu cuenta de Google para respaldar tus datos y verlos en todos tus dispositivos automáticamente.</p>
+      <button type="button" class="btn btn-primary btn-block" data-action="drive-connect">${ICONS.cloud} Conectar con Google Drive</button>
+    `;
+  } else {
+    body = `
+      <p class="field-hint" style="margin-bottom:4px;">Conectado como <strong style="color:var(--text);">${escapeHTML(driveState.email||"tu cuenta de Google")}</strong></p>
+      <p class="field-hint" style="margin-bottom:20px;">Última sincronización: ${timeAgo(driveState.lastSync)}</p>
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button type="button" class="btn btn-danger btn-sm" data-action="drive-disconnect">Desconectar</button>
+        <button type="button" class="btn btn-primary btn-sm" data-action="drive-sync-now">${ICONS.sync} Sincronizar ahora</button>
+      </div>
+    `;
+  }
+  openModal(`
+    <div class="modal-head"><h3>Sincronización con Google Drive</h3><button class="icon-btn" data-action="close-modal">${ICONS.x}</button></div>
+    ${body}
+  `);
+}
+
+function waitForGoogleIdentity(cb, attempts){
+  attempts = attempts || 0;
+  if(window.google && window.google.accounts && window.google.accounts.oauth2){ cb(); }
+  else if(attempts < 40){ setTimeout(function(){ waitForGoogleIdentity(cb, attempts+1); }, 250); }
+}
+
+function initGoogleAuth(){
+  if(!GOOGLE_CLIENT_ID) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email",
+    callback: async function(resp){
+      if(!resp || resp.error){
+        if(resp && resp.error !== "popup_closed"){ toast("No se pudo conectar con Google Drive.","error"); }
+        return;
+      }
+      driveState.accessToken = resp.access_token;
+      driveState.connected = true;
+      driveState.syncing = true;
+      updateSyncBadge();
+      await fetchDriveUserEmail();
+      await ensureDriveFile();
+      await pullFromDrive();
+      if(driveState.fileId){
+        driveState.dirty = true;
+        await pushToDrive();
+      }
+      localStorage.setItem("driveConnected","1");
+      driveState.syncing = false;
+      updateSyncBadge();
+      if(overlayEl().classList.contains("active")) modalSync();
+      toast("Conectado a Google Drive.");
+    }
+  });
+}
+
+function connectDrive(){
+  if(!GOOGLE_CLIENT_ID){ toast("Primero configura el Client ID de Google (ver instrucciones).","error"); return; }
+  if(!tokenClient){ toast("Google todavía se está cargando, intenta en unos segundos.","error"); return; }
+  tokenClient.requestAccessToken();
+}
+
+function disconnectDrive(){
+  if(driveState.accessToken && window.google){
+    try{ google.accounts.oauth2.revoke(driveState.accessToken, function(){}); }catch(e){}
+  }
+  driveState.connected = false;
+  driveState.accessToken = null;
+  driveState.email = null;
+  driveState.dirty = false;
+  driveState.syncing = false;
+  localStorage.removeItem("driveConnected");
+  updateSyncBadge();
+  if(overlayEl().classList.contains("active")) modalSync();
+  toast("Desconectado de Google Drive.");
+}
+
+async function driveFetch(url, options){
+  options = options || {};
+  options.headers = Object.assign({}, options.headers, {Authorization: "Bearer " + driveState.accessToken});
+  const res = await fetch(url, options);
+  if(res.status === 401){
+    driveState.connected = false;
+    driveState.accessToken = null;
+    updateSyncBadge();
+    toast("Tu sesión de Google Drive expiró. Reconéctate para seguir sincronizando.","error");
+    throw new Error("token_expired");
+  }
+  return res;
+}
+
+async function fetchDriveUserEmail(){
+  try{
+    const res = await driveFetch("https://www.googleapis.com/oauth2/v3/userinfo");
+    if(res.ok){ const data = await res.json(); driveState.email = data.email || null; }
+  }catch(e){}
+}
+
+async function ensureDriveFile(){
+  if(driveState.fileId){
+    try{
+      const res = await driveFetch("https://www.googleapis.com/drive/v3/files/" + driveState.fileId + "?fields=id,trashed");
+      if(res.ok){
+        const data = await res.json();
+        if(!data.trashed) return;
+      }
+    }catch(e){ return; }
+    driveState.fileId = null;
+    localStorage.removeItem("driveFileId");
+  }
+  try{
+    const q = encodeURIComponent("name='" + DRIVE_FILE_NAME + "' and trashed=false");
+    const res = await driveFetch("https://www.googleapis.com/drive/v3/files?q=" + q + "&spaces=drive&fields=files(id,name)");
+    if(res.ok){
+      const data = await res.json();
+      if(data.files && data.files.length){
+        driveState.fileId = data.files[0].id;
+        localStorage.setItem("driveFileId", driveState.fileId);
+        return;
+      }
+    }
+  }catch(e){ return; }
+  try{
+    const createRes = await driveFetch("https://www.googleapis.com/drive/v3/files", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({name: DRIVE_FILE_NAME, mimeType:"application/json"})
+    });
+    if(createRes.ok){
+      const data = await createRes.json();
+      driveState.fileId = data.id;
+      localStorage.setItem("driveFileId", driveState.fileId);
+    }
+  }catch(e){}
+}
+
+async function driveGetFileContent(fileId){
+  if(!fileId) return null;
+  try{
+    const res = await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media");
+    if(res.ok) return await res.text();
+  }catch(e){}
+  return null;
+}
+
+async function driveUpdateFileContent(fileId, contentStr){
+  if(!fileId) return false;
+  try{
+    const res = await driveFetch("https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media", {
+      method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body: contentStr
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+
+async function pullFromDrive(){
+  if(!driveState.connected || !driveState.fileId) return;
+  try{
+    const content = await driveGetFileContent(driveState.fileId);
+    if(!content) return;
+    let remote;
+    try{ remote = JSON.parse(content); }catch(e){ return; }
+    if(!remote || typeof remote.updatedAt !== "number") return;
+    if(remote.updatedAt > (state.updatedAt||0)){
+      state = {
+        accounts: remote.accounts||[],
+        pockets: remote.pockets||[],
+        transactions: remote.transactions||[],
+        categories: (remote.categories&&remote.categories.length)?remote.categories:defaultCategories(),
+        updatedAt: remote.updatedAt
+      };
+      ensureSystemCategories();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      applyMonthlyGrowth();
+      refresh();
+      toast("Datos actualizados desde Google Drive.");
+    }
+  }catch(e){ /* fallo silencioso: red u otro; se reintenta en el próximo ciclo */ }
+}
+
+async function pushToDrive(){
+  if(!driveState.connected || !driveState.fileId || !driveState.dirty) return;
+  try{
+    const ok = await driveUpdateFileContent(driveState.fileId, JSON.stringify(state));
+    if(ok){ driveState.dirty = false; driveState.lastSync = Date.now(); }
+  }catch(e){ /* se reintentará en el próximo ciclo */ }
+}
+
+function scheduleDrivePush(){
+  clearTimeout(drivePushTimer);
+  drivePushTimer = setTimeout(async function(){
+    driveState.syncing = true; updateSyncBadge();
+    await pushToDrive();
+    driveState.syncing = false; updateSyncBadge();
+  }, 2500);
+}
+
+async function driveSyncNow(){
+  if(!driveState.connected){ toast("No estás conectado a Google Drive.","error"); return; }
+  driveState.syncing = true; updateSyncBadge();
+  await pullFromDrive();
+  await pushToDrive();
+  driveState.syncing = false;
+  driveState.lastSync = driveState.lastSync || Date.now();
+  updateSyncBadge();
+  if(overlayEl().classList.contains("active")) modalSync();
+  toast("Sincronización completada.");
+}
+
+/* =========================================================
+   EVENTOS GLOBALES (delegación)
+========================================================= */
+document.addEventListener("submit", function(e){
+  if(e.target.id==="form-cuenta"){ e.preventDefault(); handleCuentaSubmit(e.target); }
+  else if(e.target.id==="form-pocket"){ e.preventDefault(); handlePocketSubmit(e.target); }
+  else if(e.target.id==="form-tx"){ e.preventDefault(); handleTxSubmit(e.target); }
+  else if(e.target.id==="form-category"){ e.preventDefault(); handleCategorySubmit(e.target); }
+  else if(e.target.id==="form-meter-sacar"){ e.preventDefault(); handleMeterSacarSubmit(e.target); }
+  else if(e.target.id==="form-pagar-tarjeta"){ e.preventDefault(); handlePagarTarjetaSubmit(e.target); }
+  else if(e.target.id==="form-transfer"){ e.preventDefault(); handleTransferSubmit(e.target); }
+});
+
+document.addEventListener("click", function(e){
+  const btn = e.target.closest("[data-action]");
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+
+  switch(action){
+    case "nav": switchView(btn.dataset.view); break;
+    case "close-modal": closeModal(); break;
+    case "confirm-delete": confirmDelete(); break;
+
+    case "new-account": modalCuenta(null); break;
+    case "edit-account": modalCuenta(getAccount(id)); break;
+    case "delete-account": {
+      const acc = getAccount(id);
+      if(!acc) break;
+      const txCount = state.transactions.filter(t=>t.accountId===id).length;
+      askDelete("account", id, txCount>0
+        ? `Esta cuenta tiene ${txCount} transacción(es) asociada(s). Si la eliminas, también se eliminarán. Esta acción no se puede deshacer.`
+        : `Vas a eliminar "${escapeHTML(acc.name)}". Esta acción no se puede deshacer.`);
+      break;
+    }
+
+    case "new-pocket": modalPocket(null); break;
+    case "edit-pocket": modalPocket(state.pockets.find(p=>p.id===id)); break;
+    case "delete-pocket": {
+      const p = state.pockets.find(x=>x.id===id);
+      if(!p) break;
+      askDelete("pocket", id, p.balance>0
+        ? `Este bolsillo tiene ${formatMoney(p.balance)}. Al eliminarlo, ese registro se perderá. Esta acción no se puede deshacer.`
+        : `Vas a eliminar "${escapeHTML(p.name)}". Esta acción no se puede deshacer.`);
+      break;
+    }
+    case "meter-bolsillo": modalMeterSacar(id, "meter"); break;
+    case "sacar-bolsillo": modalMeterSacar(id, "sacar"); break;
+    case "pagar-tarjeta": modalPagarTarjeta(id); break;
+    case "new-transfer": modalTransfer(); break;
+
+    case "open-sync": {
+      if(GOOGLE_CLIENT_ID && !driveState.connected && tokenClient){ connectDrive(); }
+      else { modalSync(); }
+      break;
+    }
+    case "drive-connect": connectDrive(); break;
+    case "drive-sync-now": driveSyncNow(); break;
+    case "drive-disconnect": disconnectDrive(); break;
+
+    case "new-tx": modalTransaccion(null); break;
+    case "edit-tx": modalTransaccion(state.transactions.find(t=>t.id===id)); break;
+    case "delete-tx": {
+      const t = state.transactions.find(x=>x.id===id);
+      let msg = "Vas a eliminar esta transacción. Esta acción no se puede deshacer.";
+      if(t && t.system && t.system.kind==="pago_tarjeta") msg = "Esto también restaurará la deuda de la tarjeta por " + formatMoney(t.system.debtAmount) + ". Esta acción no se puede deshacer.";
+      if(t && t.system && t.system.kind==="transferencia") msg = "Esto eliminará ambos movimientos de la transferencia (origen y destino). Esta acción no se puede deshacer.";
+      askDelete("tx", id, msg);
+      break;
+    }
+
+    case "new-category": modalCategory(null); break;
+    case "edit-category": modalCategory(state.categories.find(c=>c.id===id)); break;
+    case "delete-category": {
+      if(state.categories.length<=1){ toast("Debe existir al menos una categoría.","error"); break; }
+      const c = state.categories.find(x=>x.id===id);
+      if(!c) break;
+      const count = state.transactions.filter(t=>t.categoryId===id).length;
+      askDelete("category", id, count>0
+        ? `${count} transacción(es) usan esta categoría y pasarán a "Otros". ¿Deseas continuar?`
+        : `Vas a eliminar "${escapeHTML(c.name)}".`);
+      break;
+    }
+  }
+});
+
+document.getElementById("modalOverlay").addEventListener("click", function(e){
+  if(e.target.id==="modalOverlay") closeModal();
+});
+document.addEventListener("keydown", function(e){
+  if(e.key==="Escape") closeModal();
+});
+document.getElementById("fab").addEventListener("click", ()=> modalTransaccion(null));
+
+/* =========================================================
+   INICIO
+========================================================= */
+function init(){
+  if(ensureSystemCategories()) saveState();
+  applyMonthlyGrowth();
+  driveState.fileId = localStorage.getItem("driveFileId") || null;
+  updateSyncBadge();
+  switchView("dashboard");
+
+  waitForGoogleIdentity(function(){
+    initGoogleAuth();
+    if(localStorage.getItem("driveConnected")==="1" && tokenClient){
+      setTimeout(function(){ tokenClient.requestAccessToken({prompt:""}); }, 400);
+    }
+  });
+
+  setInterval(function(){
+    if(driveState.connected && !driveState.syncing){
+      pullFromDrive();
+      if(driveState.dirty) pushToDrive();
+    }
+  }, 20000);
+
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && driveState.connected) pullFromDrive();
+  });
+  window.addEventListener("focus", function(){
+    if(driveState.connected) pullFromDrive();
+  });
+}
+init();
+
+</script>
+</body>
+</html>
